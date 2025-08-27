@@ -1,24 +1,39 @@
-// 'use client'
-// import { useMutation } from 'convex/react'
-// import React from 'react'
-// import { api } from '../../convex/_generated/api'
-// import { useUser } from '@clerk/nextjs'
+'use client'
+import { useMutation } from 'convex/react'
+import React, { ReactNode, useContext, useEffect, useState } from 'react'
+import { api } from '../../convex/_generated/api'
+import { useUser } from '@clerk/nextjs'
+import { UserDetailContext } from '@/context/UserDetailContext'
 
-// function provider() {
+function Provider({ children }: { children: ReactNode }) {
 
-//     const CreateUser = useMutation(api.user.CreateNewUser)
-//     const user = useUser()
+    const CreateUser = useMutation(api.user.CreateNewUser)
+    const [userDetail, setUserDetail] = useState<any>()
+    const {user} = useUser()
 
-//     const CreateNewUser = async() => {
-// const result = await CreateUser({
-//     email:user?.primaryEmailAddress?.emailAddress,
-//     imageUrl:user?.imageUrl,
-//     name:user?.fullName
-// })
-//     }
-//   return (
-//     <div>provider</div>
-//   )
-// }
+    useEffect(() => {
+        user&&CreateNewUser();
 
-// export default provider
+    }, [user])
+
+    const CreateNewUser = async() => {
+
+        
+const result = await CreateUser({
+    email: user?.primaryEmailAddress?.emailAddress ?? '',
+    imageUrl: user?.imageUrl ?? '',
+    name: user?.fullName ?? ''
+})
+    }
+  return (
+   <UserDetailContext.Provider value={{userDetail, setUserDetail}}>
+     <div>{children}</div>
+   </UserDetailContext.Provider>
+  )
+}
+
+export default Provider
+
+export const useUserDetail = () => {
+  return useContext(UserDetailContext)
+}
