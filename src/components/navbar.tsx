@@ -4,10 +4,12 @@ import { SignOutButton, useUser } from '@clerk/nextjs'
 import {  Menu, Plane } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 
  function Navbar() {
   const [open, setOpen] = useState(false)
+  const router = useRouter()
 
   const links = [
     {
@@ -28,7 +30,16 @@ import React, { useState } from 'react'
     }
   ]
 
-  const {user} = useUser()
+   function onSend() {
+    if(!isLoaded) return;
+    if(!isSignedIn) {
+      router.push("/sign-in")
+      return;
+    }
+    router.push("/create-new-trip")
+  }
+
+  const {user, isLoaded, isSignedIn} = useUser()
   return (
     <div className='relative'>
       <div className='relative flex items-center justify-between px-4 py-3'>
@@ -45,20 +56,23 @@ import React, { useState } from 'react'
         {link.title}</Link>
       ))}
       <div className="h-full flex items-center space-x-4">
-                    {user ? <>
-                    <SignOutButton>
-                        <button className='px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg shadow-md transition-all duration-300 cursor-pointer font-semibold' >
-                            SignOut
-                        </button>
-                    </SignOutButton>
-                  
-                    </> : (<>
-                   
-                    <Link href="/sign-in" className='px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg shadow-md transition-all duration-300 cursor-pointer font-semibold' >
-                   SignIn
-                    </Link>
+                    
                 
-                    </>)}
+                
+                   { isSignedIn ? <>
+                   <button onClick={() => onSend()} className='px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg shadow-md transition-all duration-300 cursor-pointer font-semibold'>
+                    CreateTrip
+                   </button>
+                   </>: <>
+                   <button onClick={() => onSend()} className='px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg shadow-md transition-all duration-300 cursor-pointer font-semibold'>
+                    SignIn
+                   </button>
+                   </>}
+               
+           
+                  
+           
+              
 
                 </div>
     </div>
@@ -73,20 +87,17 @@ import React, { useState } from 'react'
         {link.title}</Link>
       ))}
       <div className="h-full flex items-center space-x-4">
-                    {user ? <>
-                    <SignOutButton>
-                        <button className='px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg shadow-md transition-all duration-300 cursor-pointer font-semibold' >
-                            SignOut
-                        </button>
-                    </SignOutButton>
-                  
-                    </> : (<>
+                    
+                   { isSignedIn ? <>
+                   <button onClick={() => onSend()} className='px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg shadow-md transition-all duration-300 cursor-pointer font-semibold'>
+                    CreateTrip
+                   </button>
+                   </>: <>
+                   <button onClick={() => onSend()} className='px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg shadow-md transition-all duration-300 cursor-pointer font-semibold'>
+                    SignIn
+                   </button>
+                   </>}
                    
-                    <Link href="/sign-in" className='px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg shadow-md transition-all duration-300 cursor-pointer font-semibold' >
-                   SignIn
-                    </Link>
-                
-                    </>)}
 
                 </div>
     </div>

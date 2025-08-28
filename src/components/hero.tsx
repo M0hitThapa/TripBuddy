@@ -19,6 +19,7 @@ function Hero() {
       router.push("/sign-in")
       return;
     }
+    router.push("/create-new-trip")
   }
   return (
     <div className='px-4 py-2 flex flex-col items-center gap-4 my-20'>
