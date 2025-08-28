@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Cherry+Swash:wght@400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Milonga&display=swap');
 @import "tailwindcss";
 
@@ -13,4 +14,25 @@
     font-family: "Milonga", serif;
   font-weight: 600;
   font-style: normal;
+}
+
+
+.cherry-swash-regular {
+  font-family: "Cherry Swash", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.cherry-swash-bold {
+  font-family: "Cherry Swash", serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+
+@theme {
+  --shadow-input:
+    0px 2px 3px -1px rgba(0, 0, 0, 0.1),
+    0px 1px 0px 0px rgba(25, 28, 33, 0.02),
+    0px 0px 0px 1px rgba(25, 28, 33, 0.08);
 }

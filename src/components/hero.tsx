@@ -22,7 +22,7 @@ function Hero() {
   }
   return (
     <div className='px-4 py-2 flex flex-col items-center gap-4 my-20'>
-        <button className='border rounded-full text-xs px-4 py-1 border-neutral-200 bg-emerald-50/20 text-neutral-900 font-semibold hover:bg-emerald-100 cursor-pointer transition-all duration-300'>
+        <button className='border rounded-full text-xs px-4 py-1 border-neutral-200 bg-emerald-50/20 text-neutral-900 font-semibold hover:bg-neutral-50 cursor-pointer transition-all duration-300'>
             Best Place to travel in this season
             {/*https://i.pinimg.com/736x/21/61/9d/21619df361a80e989ac536cfab5d4ab0.jpg */}
 
