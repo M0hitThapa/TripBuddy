@@ -1,8 +1,12 @@
+import SignOutButtons from '@/components/signoutbutton'
+import Link from 'next/link'
 import React from 'react'
 
 function CreateNewTrip() {
   return (
-    <div>CreateNewTrip</div>
+    <div>
+       <Link href="/">TripBuddy</Link>
+        <SignOutButtons /></div>
   )
 }
 
