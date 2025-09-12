@@ -29,13 +29,13 @@ function Hero() {
 
         </button>
         <div>
-            <h1 className='font-semibold mt-3 text-7xl text-shadow-lg/10 text-black text-center tracking-tighter'>
+            <h1 className='font-medium mt-3 lg:text-8xl md:text-6xl sm:text-4xl text-3xl text-shadow-lg/10 text-black text-center tracking-tighter'>
               <div className='flex gap-2 items-center '>
-                <Image src="/arrow.png" alt='arrow-image' height={150} width={150} />
-               <span className='bg-[url(https://i.pinimg.com/736x/21/61/9d/21619df361a80e989ac536cfab5d4ab0.jpg)] bg-clip-text text-transparent milonga-regular '>
-                Plan Your Trip in Seconds <br /> Powered by <span>Smart AI</span>
+                <Image src="/arrow.png" alt='arrow-image' height={150} width={150} className='hidden md:flex' />
+               <span className='bg-gradient-to-r from-neutral-900 to-neutral-500 bg-clip-text text-transparent domine outfit-title '>
+                Plan Your Trip in Seconds <br /> Powered by <span className='text-teal-600 text-center bg-teal-100/40  rounded-full lg:text-7xl md:text-4xl sm:text-3xl text-3xl  md:px-7 md:py-2 px-2 py-1 border-2 border-neutral-100 shadow-inner shadow-neutral-100'>TripBuddy</span>
                </span>
-               <Image src="/travel.png" alt='travel-image' height={150} width={150} />
+               <Image src="/travel.png" alt='travel-image' height={150} width={150} className='hidden md:flex' />
           </div>
             </h1>
             <p className='max-w-2xl text-center mt-4 mx-auto text-md text-neutral-800'>Share your preferences, get a day-by-day plan with local tips.</p>

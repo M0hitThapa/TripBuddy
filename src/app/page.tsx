@@ -5,7 +5,8 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-  <div className="  min-h-screen bg-[url(/background-image.jpg)] bg-no-repeat bg-center bg-cover">
+  <div className="  min-h-screen bg-neutral-100   ">
+    {/*bg-[url(/background-image.jpg)] bg-no-repeat bg-center bg-cover */}
   {/*[--background-width:308.4%] lg:[--background-width:198.96%] [background:radial-gradient(var(--background-width)_100%_at_50%_0%,_#FFF_6.32%,_#E0F0FF_29.28%,_#E7EFFD_68.68%,_#FFF_100%)] */}
    <div className="flex flex-col items-center bg-white/50 ">
      <div className="max-w-7xl mx-auto absolute inset-0 h-full w-full">
