@@ -8,8 +8,10 @@ import {
   Command,
   Frame,
   GalleryVerticalEnd,
+  LayoutDashboard,
   Map,
   PieChart,
+  Plane,
   Settings2,
   SquareTerminal,
 } from "lucide-react"
@@ -29,11 +31,7 @@ import Link from "next/link"
 
 // This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
+ 
   teams: [
     {
       name: "Acme Inc",
@@ -53,16 +51,16 @@ const data = {
   ],
   navMain: [
     {
-      title: "Playground",
+      title: "Dashboard",
       url: "#",
-      icon: SquareTerminal,
+      icon: LayoutDashboard,
       
       
     },
     {
-      title: "Models",
+      title: "Trips",
       url: "#",
-      icon: Bot,
+      icon: Plane,
       
     },
     {
@@ -87,13 +85,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="border-t-2">
         <NavMain items={data.navMain} />
        
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
+     
       <SidebarRail />
     </Sidebar>
   )

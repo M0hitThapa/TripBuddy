@@ -5,27 +5,78 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-  <div className="  min-h-screen bg-neutral-100   ">
-    {/*bg-[url(/background-image.jpg)] bg-no-repeat bg-center bg-cover */}
-  {/*[--background-width:308.4%] lg:[--background-width:198.96%] [background:radial-gradient(var(--background-width)_100%_at_50%_0%,_#FFF_6.32%,_#E0F0FF_29.28%,_#E7EFFD_68.68%,_#FFF_100%)] */}
-   <div className="flex flex-col items-center bg-white/50 ">
+ 
+
+
+    <div className="min-h-screen w-full  relative overflow-hidden ">
+ 
+
+  
+  <div
+    className="absolute inset-0 z-0"
+    style={{
+      backgroundImage: `
+        linear-gradient(to right, #e7e5e4 1px, transparent 1px),
+        linear-gradient(to bottom, #e7e5e4 1px, transparent 1px)
+      `,
+      backgroundSize: "20px 20px",
+      backgroundPosition: "0 0, 0 0",
+      maskImage: `
+        repeating-linear-gradient(
+          to right,
+          black 0px,
+          black 3px,
+          transparent 3px,
+          transparent 8px
+        ),
+        repeating-linear-gradient(
+          to bottom,
+          black 0px,
+          black 3px,
+          transparent 3px,
+          transparent 8px
+        )
+      `,
+      WebkitMaskImage: `
+        repeating-linear-gradient(
+          to right,
+          black 0px,
+          black 3px,
+          transparent 3px,
+          transparent 8px
+        ),
+        repeating-linear-gradient(
+          to bottom,
+          black 0px,
+          black 3px,
+          transparent 3px,
+          transparent 8px
+        )
+      `,
+      maskComposite: "intersect",
+      WebkitMaskComposite: "source-in",
+    }}
+  />
+ 
+   <div className="flex flex-col items-center bg-neutral-100 ">
      <div className="max-w-7xl mx-auto absolute inset-0 h-full w-full">
-      <div className="absolute inset-y-0 left-0 h-full w-px bg-gradient-to-b from-neutral-300/50 via-neutral-200 to-transparent pointer-events-none z-0" />
-      <div className="absolute inset-y-0 right-0 h-full w-px bg-gradient-to-b from-neutral-300/50 via-neutral-200 to-transparent pointer-events-none z-0" />
+      {/* <div className="absolute inset-y-0 left-0 h-full w-px bg-gradient-to-b from-neutral-300/50 via-neutral-200 to-transparent pointer-events-none z-0" />
+      <div className="absolute inset-y-0 right-0 h-full w-px bg-gradient-to-b from-neutral-300/50 via-neutral-200 to-transparent pointer-events-none z-0" /> */}
     </div>
       <Container>
       <Navbar />
       <Hero />
     </Container>
     <div className="relative w-full">
-      <div className="h-px w-full absolute inset-x-0 bg-gradient-to-r from-neutral-300/50 via-neutral-200 to-transparent pointer-events-none z-0" />
+      {/* <div className="h-px w-full absolute inset-x-0 bg-gradient-to-r from-neutral-300/50 via-neutral-200 to-transparent pointer-events-none z-0" /> */}
       <div className="max-w-5xl mx-auto p-4">
-        <Image src="/herodash.png" alt="hero-ui" width={1000} height={1000} className="rounded-xl w-full object-cover object-left-top border border-neutral-200 shadow-md  mask-b-from-10% to-50%" />
+        <Image src="/hero1.png" alt="hero-ui" width={1000} height={1000} className="rounded-xl w-full object-cover object-left-top border border-neutral-200 shadow-md  mask-b-from-10% to-50%" />
       </div>
     </div>
    </div>
+   </div>
    
      
-  </div>
+
   );
 }

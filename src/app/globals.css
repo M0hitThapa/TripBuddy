@@ -1,18 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Carrois+Gothic&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Andika:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
 
-
-.outfit-title {
-  font-family: "Outfit", sans-serif;
-  font-optical-sizing: auto;
+.andika-regular {
+  font-family: "Andika", sans-serif;
   font-weight: 500;
-  padding: 10px;
   font-style: normal;
 }
+
+.carrois-gothic-regular {
+  font-family: "Carrois Gothic", sans-serif;
+  font-weight: 600;
+  font-style: normal;
+}
+
+
+
+
+
 
 @theme {
   --shadow-input:
@@ -131,6 +140,8 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    
+      
   }
   body {
     @apply bg-background text-foreground;

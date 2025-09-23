@@ -56,11 +56,11 @@ export default function Page() {
   </div> */}
 
 
-  <div className="absolute grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
+  <div className="absolute grid grid-cols-1 md:grid-cols-2 w-full">
     <div>
       <Chatbot />
     </div>
-    <div>
+    <div className="bg-white/30 h-screen">
       map and trip planning
     </div>
   </div>

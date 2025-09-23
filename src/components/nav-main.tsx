@@ -40,9 +40,11 @@ export function NavMain({
          
             
               
-                <SidebarMenuButton className="p-5 mt-2 hover:bg-gray-200 transition-all duration-300 cursor-pointer " key={item.title} tooltip={item.title}>
-                  {item.icon && <item.icon />}
-                  <span className="font-medium text-lg">{item.title}</span>
+                <SidebarMenuButton className="p-5 mt-2  hover:bg-gray-100 transition-all duration-300 cursor-pointer text-md" key={item.title} tooltip={item.title}>
+                  <div>
+                    {item.icon && <item.icon />}
+                  </div>
+                  <span className="font-medium text-md">{item.title}</span>
                 
                 </SidebarMenuButton>
  

@@ -22,18 +22,20 @@ function Hero() {
     router.push("/create-new-trip")
   }
   return (
-    <div className='px-4 py-2 flex flex-col items-center gap-4 my-20'>
-        <button className='border rounded-full text-xs px-4 py-1 border-neutral-200 bg-emerald-50/20 text-neutral-900 font-semibold hover:bg-neutral-50 cursor-pointer transition-all duration-300'>
+    <div className='px-4 py-2 flex flex-col items-center gap-4 my-20 '>
+        <button className='border rounded-full text-xs px-4 py-1 border-neutral-200 bg-emerald-50/20 text-neutral-900 font-semibold hover:bg-neutral-50  cursor-pointer transition-all duration-300'>
             Best Place to travel in this season
             {/*https://i.pinimg.com/736x/21/61/9d/21619df361a80e989ac536cfab5d4ab0.jpg */}
 
         </button>
         <div>
-            <h1 className='font-medium mt-3 lg:text-8xl md:text-6xl sm:text-4xl text-3xl text-shadow-lg/10 text-black text-center tracking-tighter'>
+            <h1 className=' font-semibold mt-3 md:text-7xl sm:text-4xl text-3xl text-shadow-lg/10 text-black text-center tracking-tight '>
               <div className='flex gap-2 items-center '>
                 <Image src="/arrow.png" alt='arrow-image' height={150} width={150} className='hidden md:flex' />
-               <span className='bg-gradient-to-r from-neutral-900 to-neutral-500 bg-clip-text text-transparent domine outfit-title '>
-                Plan Your Trip in Seconds <br /> Powered by <span className='text-teal-600 text-center bg-teal-100/40  rounded-full lg:text-7xl md:text-4xl sm:text-3xl text-3xl  md:px-7 md:py-2 px-2 py-1 border-2 border-neutral-100 shadow-inner shadow-neutral-100'>TripBuddy</span>
+               <span className='bg-gradient-to-r from-neutral-900 to-neutral-500 bg-clip-text text-transparent  '>
+                Plan Your Trip in Seconds <br /> Powered by <span className='relative inline-block before:absolute before:-inset-1 before:block before:-skew-y-2 before:bg-teal-500 before:rounded' >
+                  <span className='relative text-neutral-700'>TripFriend</span>
+                </span>
                </span>
                <Image src="/travel.png" alt='travel-image' height={150} width={150} className='hidden md:flex' />
           </div>

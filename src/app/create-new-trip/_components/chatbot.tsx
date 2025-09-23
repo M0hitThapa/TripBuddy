@@ -8,10 +8,13 @@ import { Loader2, Send } from 'lucide-react'
 import axios from "axios"
 import React, { useState } from 'react'
 import EmptyBoxState from './EmptyBoxState'
+import GroupSizeUi from './GroupSizeUi'
+import BudgetUi from './BudgetUi'
 
 type Message ={
   role:string,
-  content:string
+  content:string,
+  ui?:string
 }
 
 const Chatbot = () => {
@@ -37,13 +40,24 @@ const Chatbot = () => {
 
     setMessages((prev:Message[]) => [...prev, {
       role:'assistant',
-      content:result.data?.resp
+      content:result.data?.resp,
+      ui:result.data.ui
     }]);
 
     console.log(result.data)
     setLoading(false)
 
   }
+
+  const RenderGenerativeUi = (ui: string) => {
+  if (ui == 'budget') {
+    return <BudgetUi onSelectedOption={(v: string) => { setUserInput(v); onSend(); }} />;
+  } else if (ui == 'groupSize') {
+    return <GroupSizeUi onSelectedOption={(v: string) => { setUserInput(v); onSend(); }} />;
+  }
+  return null;
+}
+
   return (
     <div className='border-r border-gray-200 h-[100vh] flex flex-col'>
         <section className='border-b-2 border-gray-200 bg-neutral-50 p-2 '>
@@ -61,13 +75,14 @@ const Chatbot = () => {
          {messages.map((msg:Message, index) => (
           msg.role=='user'?
            <div className='flex justify-end mt-2' key={index}>
-            <div className='max-w-lg bg-gray-200 text-neutral-900 font-medium px-2 py-2 rounded-md text-lg'>
+            <div className='max-w-md bg-gray-200 text-neutral-900 font-medium px-2 py-2 rounded-md text-md'>
               {msg.content}
             </div>
 
           </div>: <div className='flex justify-start mt-2' key={index}>
-            <div className='max-w-lg text-neutral-900 font-medium px-2 py-2 text-lg '>
+            <div className='max-w-md text-neutral-900 font-medium px-2 py-2 text-md '>
               {msg.content}
+              {RenderGenerativeUi(msg.ui ?? '')}
             </div>
 
           </div>
@@ -84,10 +99,10 @@ const Chatbot = () => {
         <section className='mx-5'>
           
             <div className='relative mb-6 '>
-              <Textarea placeholder='Plan Your Trip...' className='w-full h-32   resize-none py-2 px-3  rounded-xl shadow-md  bg-white '
+              <Textarea placeholder='Plan Your Trip...' className='w-full h-32   resize-none py-2 px-3  rounded-xl shadow-input  bg-white focus-visible:border-2 border-2 '
               onChange={(event) => setUserInput(event.target.value)} value={userInput} />
-              <Button size="icon" className='absolute bottom-3 right-3  cursor-pointer rounded-sm' onClick={() => onSend()}>
-                <Send className='h-4 w-4'/>
+              <Button size="icon" className='absolute bottom-4 right-4  cursor-pointer rounded-sm shadow-md p-1 bg-rose-700 hover:bg-rose-800' onClick={() => onSend()}>
+                <Send className=' size-5 text-neutral-200'/>
               </Button>
             </div>
 
