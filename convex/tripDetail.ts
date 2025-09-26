@@ -46,3 +46,11 @@ export const UpdateTripDetail = mutation({
     return args.id
   }
 })
+
+export const DeleteTrip = mutation({
+  args: { id: v.id('TripDetailTable') },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.id)
+    return args.id
+  }
+})
