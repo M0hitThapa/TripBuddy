@@ -1,8 +1,7 @@
 'use client'
-import { SignOutButton, useUser } from '@clerk/nextjs'
+import { useUser } from '@clerk/nextjs'
 
-import {  Menu, Plane } from 'lucide-react'
-import Image from 'next/image'
+import {  Menu } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
@@ -39,7 +38,7 @@ import React, { useState } from 'react'
     router.push("/create-new-trip")
   }
 
-  const {user, isLoaded, isSignedIn} = useUser()
+  const { isLoaded, isSignedIn} = useUser()
   return (
     <div className='relative '>
       <div className='relative flex items-center justify-between max-w-6xl mx-auto     px-5 py-2 '>

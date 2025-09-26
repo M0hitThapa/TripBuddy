@@ -9,11 +9,11 @@ import {
   SidebarMenuButton,
   
 } from "@/components/ui/sidebar"
-import { LogOut } from "lucide-react"
+ 
 import Link from "next/link"
 
 export function TeamSwitcher({
-  teams,
+  teams: _teams,
 }: {
   teams: {
     name: string
