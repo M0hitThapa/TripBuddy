@@ -1,5 +1,6 @@
 import { Container } from "@/components/container";
 import Hero from "@/components/hero";
+import { HeroVideoDialogDemo } from "@/components/hero-video-dialogue";
 import Navbar from "@/components/navbar";
 import Image from "next/image";
 
@@ -67,11 +68,12 @@ export default function Home() {
       <Navbar />
       <Hero />
     </Container>
-    <div className="relative w-full">
+    <div className="relative w-full max-w-5xl mx-auto">
       {/* <div className="h-px w-full absolute inset-x-0 bg-gradient-to-r from-neutral-300/50 via-neutral-200 to-transparent pointer-events-none z-0" /> */}
-      <div className="max-w-5xl mx-auto p-4">
+      {/* <div className="max-w-5xl mx-auto p-4">
         <Image src="/hero1.png" alt="hero-ui" width={1000} height={1000} className="rounded-xl w-full object-cover object-left-top border border-neutral-200 shadow-md  mask-b-from-10% to-50%" />
-      </div>
+      </div> */}
+      <HeroVideoDialogDemo />
     </div>
    </div>
    </div>

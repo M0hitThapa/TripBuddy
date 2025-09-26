@@ -22,7 +22,7 @@ function Hero() {
     router.push("/create-new-trip")
   }
   return (
-    <div className='px-4 py-2 flex flex-col items-center gap-4 my-20 '>
+    <div className='px-4 py-2 flex flex-col items-center gap-4 mt-20 mb-10 '>
         <button className='border rounded-full text-xs px-4 py-1 border-neutral-200 bg-emerald-50/20 text-neutral-900 font-semibold hover:bg-neutral-50  cursor-pointer transition-all duration-300'>
             Best Place to travel in this season
             {/*https://i.pinimg.com/736x/21/61/9d/21619df361a80e989ac536cfab5d4ab0.jpg */}
@@ -33,8 +33,8 @@ function Hero() {
               <div className='flex gap-2 items-center '>
                 <Image src="/arrow.png" alt='arrow-image' height={150} width={150} className='hidden md:flex' />
                <span className='bg-gradient-to-r from-neutral-900 to-neutral-500 bg-clip-text text-transparent  '>
-                Plan Your Trip in Seconds <br /> Powered by <span className='relative inline-block before:absolute before:-inset-1 before:block before:-skew-y-2 before:bg-teal-500 before:rounded' >
-                  <span className='relative text-neutral-700'>TripFriend</span>
+                Plan Your Trip in Seconds <br /> Powered by <span className='relative inline-block before:absolute before:-inset-1 before:block before:-skew-y-2 before:bg-teal-300/50 before:rounded before:border-2 before:border-white/80 before:shadow-input' >
+                  <span className='relative text-teal-800 text-shadow-2xl '>TripFriend</span>
                 </span>
                </span>
                <Image src="/travel.png" alt='travel-image' height={150} width={150} className='hidden md:flex' />

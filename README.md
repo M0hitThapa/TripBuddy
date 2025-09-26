@@ -31,6 +31,20 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Create a new Vercel project and import this repository.
+2. Set the following Environment Variables in Vercel Project Settings → Environment Variables:
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+   - `CLERK_SECRET_KEY`
+   - `NEXT_PUBLIC_CONVEX_URL`
+   - `OPENROUTER_API_KEY`
+   - `GOOGLE_MAPS_API_KEY`
+   - (optional) `ARCJET_KEY`
+3. Framework Preset: Next.js. No additional build command is needed (uses `npm run build`).
+4. Add the following domains to providers if needed:
+   - Clerk: Allowed Origins (add your Vercel domain) and Webhooks if used
+   - Google Maps: Enable Places API and add your domain to restrictions
+5. Click Deploy.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Notes
+- This project uses Next.js App Router and Edge-friendly APIs. No custom `vercel.json` is required.
+- To run locally, copy `.env.example` to `.env.local` and fill values, then `npm run dev`.

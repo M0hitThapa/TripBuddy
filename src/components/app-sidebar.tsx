@@ -14,6 +14,7 @@ import {
   Plane,
   Settings2,
   SquareTerminal,
+  Plus,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -31,7 +32,6 @@ import Link from "next/link"
 
 // This is sample data.
 const data = {
- 
   teams: [
     {
       name: "Acme Inc",
@@ -52,28 +52,23 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/create-new-trip",
       icon: LayoutDashboard,
-      
-      
     },
     {
       title: "Trips",
-      url: "#",
+      url: "/trips",
       icon: Plane,
-      
     },
     {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-     
+      title: "Explore",
+      url: "/explore",
+      icon: Map,
     },
     {
       title: "Settings",
-      url: "#",
+      url: "/settings",
       icon: Settings2,
-     
     },
   ],
  
@@ -89,6 +84,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
        
       </SidebarContent>
+     
      
       <SidebarRail />
     </Sidebar>

@@ -13,7 +13,7 @@ export const ShinyButton = React.forwardRef<HTMLButtonElement, ShinyButtonProps>
         ref={ref}
         type={type} // "button" | "submit" | "reset"
         className={cn(
-          "group relative px-2 flex justify-center items-center border border-gray-50 gap-2 text-white bg-emerald-700 text-base/7 transform transition-all duration-300 rounded-md overflow-hidden font-medium hover:ring-2 hover:ring-emerald-700 hover:ring-offset-2 focus:outline-none focus:ring-2 focus:ring-offset-2",
+          "group relative px-2 flex justify-center items-center border-2 border-white/30 gap-2 text-white bg-emerald-700 text-base/7 transform transition-all duration-300 rounded-sm overflow-hidden font-medium hover:ring-2 hover:ring-emerald-700 hover:ring-offset-2 focus:outline-none focus:ring-2 focus:ring-offset-2",
           className
         )}
         {...props}
