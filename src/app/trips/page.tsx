@@ -5,13 +5,14 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { useMutation, useQuery } from 'convex/react'
 import React, { useEffect, useMemo, useState } from 'react'
 import { api } from '../../../convex/_generated/api'
+import { Id } from '../../../convex/_generated/dataModel'
 import { useUser } from '@clerk/nextjs'
 import { useUserDetail } from '../provider'
  
 
 export default function TripsPage() {
   const { user } = useUser()
-  const { userDetail } = useUserDetail() as any
+  const { userDetail } = useUserDetail() as { userDetail: { _id?: Id<"userTable">; [key: string]: unknown } | null }
   const trips = useQuery(
     api.tripDetail.ListTripsByUser,
     userDetail?._id ? { uid: userDetail._id } : 'skip'
@@ -32,8 +33,8 @@ export default function TripsPage() {
             <div className="text-neutral-600">No trips yet. Generate one to get started!</div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {trips.map((t: any) => (
-                <TripCard key={t._id} t={t} onDelete={async (id: string) => {
+              {trips.map((t: { _id: Id<"TripDetailTable">; tripDetail?: { resp?: string; itinerary?: unknown[]; destination?: string; city?: string; country?: string } }) => (
+                <TripCard key={t._id} t={t} onDelete={async (id: Id<"TripDetailTable">) => {
                   try { await deleteTrip({ id }) } catch (err) { console.error('Failed to delete trip', err) }
                 }} />
               ))}
@@ -45,8 +46,8 @@ export default function TripsPage() {
   )
 }
 
-function TripCard({ t, onDelete }: { t: any; onDelete: (id: string) => Promise<void> }) {
-  const allPhotos: string[] = t.tripDetail?.itinerary?.flatMap((d: any) => d?.photos || []) || []
+function TripCard({ t, onDelete }: { t: { _id: Id<"TripDetailTable">; tripDetail?: { resp?: string; itinerary?: unknown[]; destination?: string; city?: string; country?: string } }; onDelete: (id: Id<"TripDetailTable">) => Promise<void> }) {
+  const allPhotos: string[] = (t.tripDetail?.itinerary as { photos?: string[] }[])?.flatMap((d: { photos?: string[] }) => d?.photos || []) || []
   const firstPhoto: string | undefined = allPhotos[0]
   const [imgSrc, setImgSrc] = useState<string | null>(firstPhoto ? `/api/google/places/photo?photo_reference=${encodeURIComponent(firstPhoto)}&maxwidth=640` : null)
 
@@ -54,19 +55,20 @@ function TripCard({ t, onDelete }: { t: any; onDelete: (id: string) => Promise<v
     const resp: string = t.tripDetail?.resp || ''
     // Try to parse "from X to Y"
     const m = resp.match(/from\s+([^.,;\n]+?)\s+to\s+([^.,;\n]+)/i)
-    let from = m?.[1]?.trim()
-    let to = m?.[2]?.trim()
+    const from = m?.[1]?.trim()
+    const to = m?.[2]?.trim()
     // Fallback for destination
-    if (!to) {
-      to = t.tripDetail?.destination || t.tripDetail?.city || t.tripDetail?.country
-      if (!to) {
-        const firstTitle = t.tripDetail?.itinerary?.[0]?.title
-        const firstHotel = t.tripDetail?.itinerary?.[0]?.hotels?.[0]
-        to = firstTitle || firstHotel || ''
+    let finalTo = to
+    if (!finalTo) {
+      finalTo = t.tripDetail?.destination || t.tripDetail?.city || t.tripDetail?.country
+      if (!finalTo) {
+        const firstTitle = (t.tripDetail?.itinerary?.[0] as { title?: string })?.title
+        const firstHotel = (t.tripDetail?.itinerary?.[0] as { hotels?: string[] })?.hotels?.[0]
+        finalTo = firstTitle || firstHotel || ''
       }
     }
-    const fromTo = (from || to) ? `From ${from || '—'} to ${to || '—'}` : 'Saved Trip'
-    const searchQuery = to || from || ''
+    const fromTo = (from || finalTo) ? `From ${from || '—'} to ${finalTo || '—'}` : 'Saved Trip'
+    const searchQuery = finalTo || from || ''
     return { fromTo, searchQuery }
   }, [t])
 

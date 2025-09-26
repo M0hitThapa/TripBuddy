@@ -21,6 +21,7 @@ export function TeamSwitcher({
     plan: string
   }[]
 }) {
+  // teams parameter is required by parent component but not used in this implementation
   
   
 

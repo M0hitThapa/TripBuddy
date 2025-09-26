@@ -9,13 +9,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 function Provider({ children }: { children: ReactNode }) {
 
     const CreateUser = useMutation(api.user.CreateNewUser)
-    const [userDetail, setUserDetail] = useState<any>()
+    const [userDetail, setUserDetail] = useState<{ _id?: string; [key: string]: unknown } | null>(null)
     const {user} = useUser()
 
     useEffect(() => {
-        user&&CreateNewUser();
-
-    }, [user])
+        if (user) {
+            CreateNewUser();
+        }
+    }, [user, CreateNewUser])
 
     const CreateNewUser = async() => {
         const result = await CreateUser({
