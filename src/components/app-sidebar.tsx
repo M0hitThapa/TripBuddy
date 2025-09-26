@@ -1,32 +1,12 @@
 "use client"
 
 import * as React from "react"
-import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  LayoutDashboard,
-  Map,
-  PieChart,
-  Plane,
-  Settings2,
-  SquareTerminal,
-  Plus,
-} from "lucide-react"
+import { AudioWaveform, Command, GalleryVerticalEnd, LayoutDashboard, Map, Plane, Settings2 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
  
 import { TeamSwitcher } from "@/components/team-switcher"
-import {
-  Sidebar,
-  SidebarContent,
-  
-  SidebarHeader,
-  SidebarRail,
-} from "@/components/ui/sidebar"
+import { Sidebar, SidebarContent, SidebarHeader, SidebarRail } from "@/components/ui/sidebar"
  
 
 // This is sample data.
