@@ -1,23 +1,21 @@
-'use client'
+"use client";
 
-import { AppSidebar } from '@/components/app-sidebar'
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
-import { useMutation, useQuery } from 'convex/react'
-import React, { useEffect, useMemo, useState } from 'react'
-import { api } from '../../../convex/_generated/api'
-import { Id } from '../../../convex/_generated/dataModel'
-import { useUser } from '@clerk/nextjs'
-import { useUserDetail } from '../provider'
- 
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useMutation, useQuery } from "convex/react";
+import React, { useEffect, useMemo, useState } from "react";
+import { api } from "../../../convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
+import { useUserDetail } from "../provider";
 
 export default function TripsPage() {
-  const { user } = useUser()
-  const { userDetail } = useUserDetail() as { userDetail: { _id?: Id<"userTable">; [key: string]: unknown } | null }
+  const { user } = useUser();
+  const { userDetail } = useUserDetail() as any;
   const trips = useQuery(
     api.tripDetail.ListTripsByUser,
-    userDetail?._id ? { uid: userDetail._id } : 'skip'
-  )
-  const deleteTrip = useMutation(api.tripDetail.DeleteTrip)
+    userDetail?._id ? { uid: userDetail._id } : "skip"
+  );
+  const deleteTrip = useMutation(api.tripDetail.DeleteTrip);
 
   return (
     <SidebarProvider>
@@ -30,64 +28,95 @@ export default function TripsPage() {
           ) : !trips ? (
             <div className="text-neutral-600">Loading...</div>
           ) : trips.length === 0 ? (
-            <div className="text-neutral-600">No trips yet. Generate one to get started!</div>
+            <div className="text-neutral-600">
+              No trips yet. Generate one to get started!
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {trips.map((t: { _id: Id<"TripDetailTable">; tripDetail?: { resp?: string; itinerary?: unknown[]; destination?: string; city?: string; country?: string } }) => (
-                <TripCard key={t._id} t={t} onDelete={async (id: Id<"TripDetailTable">) => {
-                  try { await deleteTrip({ id }) } catch (err) { console.error('Failed to delete trip', err) }
-                }} />
+              {trips.map((t: any) => (
+                <TripCard
+                  key={t._id}
+                  t={t}
+                  onDelete={async (id: string) => {
+                    try {
+                      await deleteTrip({ id });
+                    } catch (err) {
+                      console.error("Failed to delete trip", err);
+                    }
+                  }}
+                />
               ))}
             </div>
           )}
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
 
-function TripCard({ t, onDelete }: { t: { _id: Id<"TripDetailTable">; tripDetail?: { resp?: string; itinerary?: unknown[]; destination?: string; city?: string; country?: string } }; onDelete: (id: Id<"TripDetailTable">) => Promise<void> }) {
-  const allPhotos: string[] = (t.tripDetail?.itinerary as { photos?: string[] }[])?.flatMap((d: { photos?: string[] }) => d?.photos || []) || []
-  const firstPhoto: string | undefined = allPhotos[0]
-  const [imgSrc, setImgSrc] = useState<string | null>(firstPhoto ? `/api/google/places/photo?photo_reference=${encodeURIComponent(firstPhoto)}&maxwidth=640` : null)
+function TripCard({
+  t,
+  onDelete,
+}: {
+  t: any;
+  onDelete: (id: string) => Promise<void>;
+}) {
+  const allPhotos: string[] =
+    t.tripDetail?.itinerary?.flatMap((d: any) => d?.photos || []) || [];
+  const firstPhoto: string | undefined = allPhotos[0];
+  const [imgSrc, setImgSrc] = useState<string | null>(
+    firstPhoto
+      ? `/api/google/places/photo?photo_reference=${encodeURIComponent(firstPhoto)}&maxwidth=640`
+      : null
+  );
 
   const { fromTo, searchQuery } = useMemo(() => {
-    const resp: string = t.tripDetail?.resp || ''
+    const resp: string = t.tripDetail?.resp || "";
     // Try to parse "from X to Y"
-    const m = resp.match(/from\s+([^.,;\n]+?)\s+to\s+([^.,;\n]+)/i)
-    const from = m?.[1]?.trim()
-    const to = m?.[2]?.trim()
+    const m = resp.match(/from\s+([^.,;\n]+?)\s+to\s+([^.,;\n]+)/i);
+    let from = m?.[1]?.trim();
+    let to = m?.[2]?.trim();
     // Fallback for destination
-    let finalTo = to
-    if (!finalTo) {
-      finalTo = t.tripDetail?.destination || t.tripDetail?.city || t.tripDetail?.country
-      if (!finalTo) {
-        const firstTitle = (t.tripDetail?.itinerary?.[0] as { title?: string })?.title
-        const firstHotel = (t.tripDetail?.itinerary?.[0] as { hotels?: string[] })?.hotels?.[0]
-        finalTo = firstTitle || firstHotel || ''
+    if (!to) {
+      to =
+        t.tripDetail?.destination ||
+        t.tripDetail?.city ||
+        t.tripDetail?.country;
+      if (!to) {
+        const firstTitle = t.tripDetail?.itinerary?.[0]?.title;
+        const firstHotel = t.tripDetail?.itinerary?.[0]?.hotels?.[0];
+        to = firstTitle || firstHotel || "";
       }
     }
-    const fromTo = (from || finalTo) ? `From ${from || '—'} to ${finalTo || '—'}` : 'Saved Trip'
-    const searchQuery = finalTo || from || ''
-    return { fromTo, searchQuery }
-  }, [t])
+    const fromTo =
+      from || to ? `From ${from || "—"} to ${to || "—"}` : "Saved Trip";
+    const searchQuery = to || from || "";
+    return { fromTo, searchQuery };
+  }, [t]);
 
   useEffect(() => {
-    if (imgSrc || !searchQuery) return
-    let cancelled = false
+    if (imgSrc || !searchQuery) return;
+    let cancelled = false;
     const run = async () => {
       try {
-        const res = await fetch(`/api/google/places/search?query=${encodeURIComponent(searchQuery)}`)
-        const data = await res.json()
-        const ref: string | undefined = data?.results?.[0]?.photos?.[0]?.photo_reference
+        const res = await fetch(
+          `/api/google/places/search?query=${encodeURIComponent(searchQuery)}`
+        );
+        const data = await res.json();
+        const ref: string | undefined =
+          data?.results?.[0]?.photos?.[0]?.photo_reference;
         if (!cancelled && ref) {
-          setImgSrc(`/api/google/places/photo?photo_reference=${encodeURIComponent(ref)}&maxwidth=640`)
+          setImgSrc(
+            `/api/google/places/photo?photo_reference=${encodeURIComponent(ref)}&maxwidth=640`
+          );
         }
       } catch {}
-    }
-    run()
-    return () => { cancelled = true }
-  }, [imgSrc, searchQuery])
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [imgSrc, searchQuery]);
 
   return (
     <a href={`/trips/${t._id}`} className="mx-auto w-full max-w-xs">
@@ -102,8 +131,20 @@ function TripCard({ t, onDelete }: { t: { _id: Id<"TripDetailTable">; tripDetail
           ) : (
             <div className="flex h-full w-full items-center justify-center p-3">
               <div className="w-full h-full rounded-3xl bg-white flex items-center justify-center">
-                <svg className="w-14 h-14 text-neutral-700" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="56" height="56" fill="currentColor" viewBox="0 0 24 24">
-                  <path fillRule="evenodd" d="M12 2a1 1 0 0 1 .932.638l7 18a1 1 0 0 1-1.326 1.281L13 19.517V13a1 1 0 1 0-2 0v6.517l-5.606 2.402a1 1 0 0 1-1.326-1.281l7-18A1 1 0 0 1 12 2Z" clip-rule="evenodd"/>
+                <svg
+                  className="w-14 h-14 text-neutral-700"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="56"
+                  height="56"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M12 2a1 1 0 0 1 .932.638l7 18a1 1 0 0 1-1.326 1.281L13 19.517V13a1 1 0 1 0-2 0v6.517l-5.606 2.402a1 1 0 0 1-1.326-1.281l7-18A1 1 0 0 1 12 2Z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </div>
             </div>
@@ -116,13 +157,15 @@ function TripCard({ t, onDelete }: { t: { _id: Id<"TripDetailTable">; tripDetail
           <div className="mt-6 flex flex-row items-center justify-between">
             <span className="text-sm text-gray-500">TripBuddy</span>
             <div className="flex items-center gap-2">
-              <span className="rounded-sm bg-neutral-950 px-5 py-2 text-sm font-bold text-white">View</span>
+              <span className="rounded-sm bg-neutral-950 px-5 py-2 text-sm font-bold text-white">
+                View
+              </span>
               <button
                 className="rounded-sm bg-rose-600 hover:bg-rose-700 px-3 py-2 text-xs font-bold text-white"
                 onClick={async (e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  await onDelete(t._id)
+                  e.preventDefault();
+                  e.stopPropagation();
+                  await onDelete(t._id);
                 }}
                 title="Delete trip"
               >
@@ -133,5 +176,5 @@ function TripCard({ t, onDelete }: { t: { _id: Id<"TripDetailTable">; tripDetail
         </div>
       </div>
     </a>
-  )
+  );
 }

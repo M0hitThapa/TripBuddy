@@ -4,7 +4,6 @@ import { AppSidebar } from '@/components/app-sidebar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { useQuery } from 'convex/react'
 import { api } from '../../../../convex/_generated/api'
-import { Id } from '../../../../convex/_generated/dataModel'
 import { useParams, useRouter } from 'next/navigation'
 import React, { useMemo } from 'react'
 import ItineraryGrid from '../../create-new-trip/_components/ItineraryGrid'
@@ -12,8 +11,8 @@ import ItineraryGrid from '../../create-new-trip/_components/ItineraryGrid'
 export default function TripDetailPage() {
   const params = useParams() as { id?: string }
   const router = useRouter()
-  const id = params?.id as Id<"TripDetailTable">
-  const trip = useQuery(api.tripDetail.GetTrip, id ? { id } : 'skip') as { tripDetail?: { itinerary?: unknown[]; budget?: { breakdown?: unknown[] } } } | null
+  const id = params?.id as any
+  const trip = useQuery(api.tripDetail.GetTrip, id ? { id } : 'skip') as any
 
   const itinerary = useMemo(() => trip?.tripDetail?.itinerary ?? [], [trip])
   const budget = useMemo(() => trip?.tripDetail?.budget ?? null, [trip])
@@ -44,7 +43,7 @@ export default function TripDetailPage() {
                   Edit with AI
                 </button>
               </div>
-              <ItineraryGrid itinerary={itinerary as any} costs={budget?.breakdown as any} />
+              <ItineraryGrid itinerary={itinerary} costs={budget?.breakdown} />
             </>
           )}
         </div>
