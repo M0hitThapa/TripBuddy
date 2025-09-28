@@ -35,7 +35,6 @@ type Props = {
 }
 
 const ItineraryGrid = ({ itinerary, costs }: Props) => {
-  if (!itinerary?.length) return null
   const costByDay = new Map<number, DayCostBreakdown>((costs ?? []).map(c => [c.day, c]))
 
   // Cache photo references per day if AI didn't provide photos
@@ -90,6 +89,8 @@ const ItineraryGrid = ({ itinerary, costs }: Props) => {
     // We intentionally don't include photoRefsByDay to avoid re-running on state change
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itinerary])
+
+  if (!itinerary?.length) return null
   return (
     <div className="p-6 h-full overflow-y-auto">
       <h2 className="text-2xl font-semibold tracking-tight mb-4">Trip Itinerary</h2>

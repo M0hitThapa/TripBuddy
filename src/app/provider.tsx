@@ -1,6 +1,6 @@
 "use client"
 import { useMutation } from 'convex/react'
-import React, { ReactNode, useContext, useEffect, useState } from 'react'
+import React, { ReactNode, useCallback, useContext, useEffect, useState } from 'react'
 import { api } from '../../convex/_generated/api'
 import { useUser } from '@clerk/nextjs'
 import { UserDetailContext } from '@/context/UserDetailContext'
@@ -12,18 +12,18 @@ function Provider({ children }: { children: ReactNode }) {
     const [userDetail, setUserDetail] = useState<unknown>()
     const {user} = useUser()
 
-    const CreateNewUser = async() => {
+    const CreateNewUser = useCallback(async () => {
         const result = await CreateUser({
             email: user?.primaryEmailAddress?.emailAddress ?? '',
             imageUrl: user?.imageUrl ?? '',
             name: user?.fullName ?? ''
         })
         setUserDetail(result)
-    }
-    
+    }, [CreateUser, user])
+
     useEffect(() => {
         if (user) void CreateNewUser();
-    }, [user])
+    }, [user, CreateNewUser])
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
