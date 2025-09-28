@@ -1,36 +1,50 @@
 'use client'
 
 import { AppSidebar } from "@/components/app-sidebar"
-import SignOutButtons from "@/components/signoutbutton"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
-import React, { useEffect, useMemo, useState } from "react"
+import { SidebarProvider } from "@/components/ui/sidebar"
+import React, { Suspense, useEffect, useMemo, useState } from "react"
 import { useSearchParams } from 'next/navigation'
 import { useQuery } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import Chatbot from "./_components/chatbot"
-import ItineraryGrid from "./_components/ItineraryGrid"
 import TrendingTrips from "./_components/TrendingTrips"
+import ItineraryGrid from "./_components/ItineraryGrid"
+import type { Id } from '../../../convex/_generated/dataModel'
 
-export default function Page() {
-  const [itinerary, setItinerary] = useState<any[]>([])
-  const [budget, setBudget] = useState<any | null>(null)
+type ItineraryItem = {
+  day: number
+  title?: string
+  morning?: string
+  afternoon?: string
+  evening?: string
+  notes?: string
+  weather?: { summary?: string; tips?: string }
+  cafes?: string[]
+  hotels?: string[]
+  adventures?: string[]
+  photos?: string[]
+}
+
+type DayCostBreakdown = {
+  day: number
+  total: number
+  hotels?: { name: string; price: number }[]
+  activities?: { name: string; price: number }[]
+}
+
+type AiResponse = {
+  itinerary?: ItineraryItem[]
+  budget?: { currency?: string; total?: number; breakdown?: DayCostBreakdown[] }
+}
+
+function PageContent() {
+  const [itinerary, setItinerary] = useState<ItineraryItem[]>([])
+  const [budget, setBudget] = useState<AiResponse["budget"] | null>(null)
   const [chatKey, setChatKey] = useState<number>(0)
   const search = useSearchParams()
   const editId = search?.get('edit')
-  const existingTrip = useQuery(api.tripDetail.GetTrip, editId ? { id: editId as any } : 'skip') as any
+  const existingTrip = useQuery(api.tripDetail.GetTrip, editId ? { id: (editId as unknown as Id<'TripDetailTable'>) } : 'skip')
+  const newFlag = search?.get('new')
   useEffect(() => {
     if (typeof window === 'undefined') return
     const url = new URL(window.location.href)
@@ -41,8 +55,8 @@ export default function Page() {
       url.searchParams.delete('new')
       window.history.replaceState({}, '', url.toString())
     }
-  }, [search?.get('new')])
-  const handleFinal = (payload: any) => {
+  }, [newFlag])
+  const handleFinal = (payload: AiResponse) => {
     if (Array.isArray(payload?.itinerary)) setItinerary(payload.itinerary)
     if (payload?.budget) setBudget(payload.budget)
   }
@@ -104,7 +118,7 @@ export default function Page() {
               <div className="w-64 shrink-0 sticky top-2">
                 <div className="rounded-lg border border-neutral-200 bg-white shadow p-4">
                   <div className="text-xs text-neutral-600">Estimated total budget</div>
-                  <div className="mt-1 text-2xl font-bold text-neutral-900">${(budget?.total ?? 0).toFixed ? (budget.total).toFixed(2) : budget?.total} <span className="text-xs font-medium text-neutral-500">{budget?.currency || 'USD'}</span></div>
+                  <div className="mt-1 text-2xl font-bold text-neutral-900">${typeof budget?.total === 'number' ? budget.total.toFixed(2) : (budget?.total ?? 0)} <span className="text-xs font-medium text-neutral-500">{budget?.currency || 'USD'}</span></div>
                 </div>
               </div>
             ) : <div />}
@@ -125,5 +139,13 @@ export default function Page() {
       
    
     </SidebarProvider>
+  )
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <PageContent />
+    </Suspense>
   )
 }

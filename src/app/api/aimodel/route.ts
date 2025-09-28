@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
-export const openai = new OpenAI({
+const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
   apiKey: process.env.OPENROUTER_API_KEY,
   maxRetries: 3,
@@ -137,7 +137,8 @@ export async function POST(req: NextRequest) {
         messages.length > 8) ||
       messages.length > 14; // Fallback for long conversations
 
-    const errors: any[] = [];
+    type ErrorEntry = Record<string, unknown>;
+    const errors: ErrorEntry[] = [];
 
     for (const model of modelFallbacks) {
       try {
@@ -168,10 +169,10 @@ export async function POST(req: NextRequest) {
           continue;
         }
 
-        let parsed: any;
+        let parsed: unknown;
         try {
           parsed = JSON.parse(raw);
-        } catch (err) {
+        } catch {
           // Enhanced JSON extraction with multiple strategies
           try {
             // Strategy 1: Extract from code blocks
@@ -242,39 +243,46 @@ export async function POST(req: NextRequest) {
           continue;
         }
 
-        // Normalize empty ui
-        if (parsed.ui === "") parsed.ui = undefined;
+        // Normalize and validate parsed object
+        type MutableParsed = {
+          [key: string]: unknown;
+          ui?: string;
+          resp?: unknown;
+          itinerary?: unknown;
+          budget?: unknown;
+        };
+        const p = parsed as MutableParsed;
+        if (p.ui === "") p.ui = undefined;
 
         // Enhanced validation
-        const hasResp =
-          typeof parsed.resp === "string" && parsed.resp.length > 0;
-        const isFinal = parsed.ui === "Final";
+        const hasResp = typeof p.resp === "string" && p.resp.length > 0;
+        const isFinal = p.ui === "Final";
         const hasItinerary =
-          Array.isArray(parsed.itinerary) && parsed.itinerary.length > 0;
-        const hasBudget = parsed.budget && typeof parsed.budget === "object";
+          Array.isArray(p.itinerary) && p.itinerary.length > 0;
+        const hasBudget = !!p.budget && typeof p.budget === "object";
 
         if (isFinal) {
           if (hasResp && hasItinerary && hasBudget) {
             // Additional validation for final response quality
-            const firstDay = parsed.itinerary[0];
+            const firstDay = (p.itinerary as Array<Record<string, unknown>>)[0];
             const hasRequiredFields =
               firstDay &&
-              firstDay.title &&
-              firstDay.morning &&
-              firstDay.afternoon &&
-              firstDay.evening;
+              (firstDay as Record<string, unknown>).title &&
+              (firstDay as Record<string, unknown>).morning &&
+              (firstDay as Record<string, unknown>).afternoon &&
+              (firstDay as Record<string, unknown>).evening;
 
             if (hasRequiredFields) {
-              return NextResponse.json(parsed);
+              return NextResponse.json(p);
             } else {
               errors.push({
                 model,
                 error: "incomplete_itinerary_structure",
                 missingFields: {
-                  title: !firstDay?.title,
-                  morning: !firstDay?.morning,
-                  afternoon: !firstDay?.afternoon,
-                  evening: !firstDay?.evening,
+                  title: !(firstDay as Record<string, unknown>)?.title,
+                  morning: !(firstDay as Record<string, unknown>)?.morning,
+                  afternoon: !(firstDay as Record<string, unknown>)?.afternoon,
+                  evening: !(firstDay as Record<string, unknown>)?.evening,
                 },
               });
               continue;
@@ -286,36 +294,31 @@ export async function POST(req: NextRequest) {
               hasResp,
               hasItinerary,
               hasBudget,
-              raw: JSON.stringify(parsed).slice(0, 500),
+              raw: JSON.stringify(p).slice(0, 500),
             });
             continue;
           }
         } else {
           if (hasResp) {
-            return NextResponse.json(parsed);
+            return NextResponse.json(p);
           } else {
             errors.push({
               model,
               error: "missing_resp_field",
-              raw: JSON.stringify(parsed).slice(0, 500),
+              raw: JSON.stringify(p).slice(0, 500),
             });
             continue;
           }
         }
-      } catch (err: any) {
-        const message =
-          err?.error?.message ||
-          err?.response?.data?.error ||
-          err?.response?.data?.message ||
-          err?.message ||
-          "unknown_error";
-        const status = err?.status || err?.response?.status;
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "unknown_error";
+        const status = undefined as number | undefined;
 
         errors.push({
           model,
           error: message,
           status,
-          type: err?.name || "unknown",
+          type: err instanceof Error ? err.name : "unknown",
         });
 
         // Break on certain error types
@@ -347,15 +350,17 @@ export async function POST(req: NextRequest) {
       },
       { status: 502 }
     );
-  } catch (e: any) {
-    const message =
-      typeof e?.message === "string" ? e.message : "Unknown server error";
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : "Unknown server error";
     const status = /timeout/i.test(message) ? 504 : 500;
     console.error("API route error:", e);
     return NextResponse.json(
       {
         error: message,
-        stack: process.env.NODE_ENV === "development" ? e?.stack : undefined,
+        stack:
+          process.env.NODE_ENV === "development" && e instanceof Error
+            ? e.stack
+            : undefined,
       },
       { status }
     );

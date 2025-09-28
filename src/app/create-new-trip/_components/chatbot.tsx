@@ -6,10 +6,11 @@ import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Textarea } from '@/components/ui/textarea'
 import { Loader2, Send, PlaneTakeoff, Mountain, Users, Waves, MapPin, Camera, Coffee, ShoppingBag, Utensils, Building, Sun, Heart } from 'lucide-react'
 import { LoaderOne } from '@/components/ui/loaderOne'
-import axios from "axios"
+import axios, { type AxiosResponse } from "axios"
 import { useMutation } from 'convex/react'
 import { api } from '../../../../convex/_generated/api'
-import { useUser } from '@clerk/nextjs'
+import type { Id } from '../../../../convex/_generated/dataModel'
+// removed useUser (unused)
 import { useUserDetail } from '@/app/provider'
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -26,8 +27,39 @@ type Message = {
   ui?: string
 }
 
+type ItineraryItem = {
+  day: number
+  title?: string
+  morning?: string
+  afternoon?: string
+  evening?: string
+  notes?: string
+  weather?: { summary?: string; tips?: string }
+  cafes?: string[]
+  hotels?: string[]
+  adventures?: string[]
+}
+
+type DayCostBreakdown = {
+  day: number
+  total: number
+  hotels?: { name: string; price: number }[]
+  activities?: { name: string; price: number }[]
+}
+
+type AiResponse = {
+  resp: string
+  ui?: string
+  itinerary?: ItineraryItem[]
+  budget?: {
+    currency?: string
+    total?: number
+    breakdown?: DayCostBreakdown[]
+  }
+}
+
 type ChatbotProps = {
-  onFinal?: (payload: any) => void
+  onFinal?: (payload: AiResponse) => void
   editTripId?: string | null
 }
 
@@ -49,11 +81,11 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
   const lastSendAtRef = useRef<number>(0)
   const createTrip = useMutation(api.tripDetail.CreateTripDetail)
   const updateTrip = useMutation(api.tripDetail.UpdateTripDetail)
-  const { user } = useUser()
-  const { userDetail } = useUserDetail() as any
+  // no current user usage needed here
+  const { userDetail } = useUserDetail() as { userDetail?: { _id?: string } }
 
-  // Enhanced starter prompts covering different travel types and budgets
-  const starterPrompts = [
+  // Enhanced starter prompts covering different travel types and budgets (memoized)
+  const starterPrompts = useMemo(() => ([
     // Adventure & Nature
     { label: 'Plan a 7-day adventure trip to Nepal from Delhi for a couple', Icon: Mountain, bg: 'bg-emerald-100', text: 'text-emerald-700' },
     { label: 'Romantic 4-day getaway to Paris under $2000', Icon: Heart, bg: 'bg-rose-100', text: 'text-rose-700' },
@@ -77,7 +109,7 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
     // Shopping & Urban
     { label: 'Shopping spree in Dubai and Singapore, luxury', Icon: ShoppingBag, bg: 'bg-pink-100', text: 'text-pink-700' },
     { label: 'Explore hidden gems of Kerala, eco-friendly travel', Icon: MapPin, bg: 'bg-green-100', text: 'text-green-700' }
-  ]
+  ]), [])
 
   useEffect(() => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
@@ -155,8 +187,8 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
 
       const maxAttempts = 2
       let attempt = 0
-      let lastError: any = null
-      let result: any = null
+      let lastError: unknown = null
+      let result: AxiosResponse<AiResponse> | null = null
 
       while (attempt < maxAttempts) {
         try {
@@ -172,24 +204,25 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
             }
           })
           
-          console.log('API Response:', result.data)
+          if (result) {
+            console.log('API Response:', result.data)
+          }
           break
 
-        } catch (err: any) {
+        } catch (err: unknown) {
           lastError = err
           attempt++
           
           // Don't retry on user cancellation
-          if (axios.isCancel?.(err) || err?.code === 'ERR_CANCELED') {
+          if (axios.isCancel?.(err as never) || (typeof err === 'object' && err !== null && 'code' in err && (err as { code?: string }).code === 'ERR_CANCELED')) {
             throw err
           }
 
           // Don't retry on certain errors
-          const errorMsg = err?.response?.data?.error || err?.message || ''
+          const errorMsg = (typeof err === 'object' && err !== null && 'response' in err && (err as { response?: { data?: { error?: string } } }).response?.data?.error) || (err instanceof Error ? err.message : '')
           if (errorMsg.includes('Missing OPENROUTER_API_KEY') || 
               errorMsg.includes('Invalid request') ||
-              err?.response?.status === 401 ||
-              err?.response?.status === 403) {
+              (typeof err === 'object' && err !== null && 'response' in err && (((err as { response?: { status?: number } }).response?.status === 401) || ((err as { response?: { status?: number } }).response?.status === 403)))) {
             throw err
           }
 
@@ -202,7 +235,7 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
         }
       }
 
-      if (!result) throw lastError ?? new Error('Request failed after retries')
+      if (!result) throw (lastError ?? new Error('Request failed after retries'))
 
       // Validate response structure
       if (!result.data || typeof result.data !== 'object') {
@@ -226,18 +259,34 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
         // Enforce itinerary length to match desiredDays if set
         try {
           if (desiredDays && Array.isArray(result.data.itinerary)) {
-            const current = result.data.itinerary as any[]
-            let adjusted: any[] = current
+            const current = result.data.itinerary as ItineraryItem[]
+            let adjusted: ItineraryItem[] = current
             if (current.length > desiredDays) {
               adjusted = current.slice(0, desiredDays)
             } else if (current.length < desiredDays) {
-              const last = current[current.length - 1] ?? { day: current.length, title: '', morning: '', afternoon: '', evening: '' }
+              const last: ItineraryItem = current[current.length - 1] ?? {
+                day: current.length,
+                title: 'Explore locally',
+                morning: 'Leisurely breakfast and neighborhood walk.',
+                afternoon: 'Visit a nearby museum or park of your choice.',
+                evening: 'Enjoy local cuisine and a relaxing evening stroll.'
+              }
               adjusted = [...current]
               for (let d = current.length + 1; d <= desiredDays; d++) {
-                adjusted.push({ ...last, day: d })
+                adjusted.push({
+                  day: d,
+                  title: last.title || 'Explore locally',
+                  morning: last.morning || 'Leisurely breakfast and neighborhood walk.',
+                  afternoon: last.afternoon || 'Visit a nearby museum or park of your choice.',
+                  evening: last.evening || 'Enjoy local cuisine and a relaxing evening stroll.',
+                  notes: last.notes,
+                  cafes: last.cafes,
+                  hotels: last.hotels,
+                  adventures: last.adventures,
+                })
               }
             }
-            result.data.itinerary = adjusted.map((it: any, idx: number) => ({ ...it, day: idx + 1 }))
+            result.data.itinerary = adjusted.map((it: ItineraryItem, idx: number) => ({ ...it, day: idx + 1 }))
           }
         } catch {}
 
@@ -246,12 +295,12 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
         try {
           if (userDetail?._id) {
             if (editTripId) {
-              await updateTrip({ id: editTripId as any, tripDetail: result.data })
+              await updateTrip({ id: (editTripId as unknown as Id<'TripDetailTable'>), tripDetail: result.data })
               console.log('Trip updated successfully')
             } else {
               await createTrip({
                 tripId: `${Date.now()}`,
-                uid: userDetail._id,
+                uid: (userDetail._id as unknown as Id<'userTable'>),
                 tripDetail: result.data,
               })
               console.log('Trip saved successfully')
@@ -269,14 +318,14 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
       // Reset retry count on success
       setRetryCount(0)
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Chat error:', error)
       
-      if (axios.isCancel?.(error) || error?.code === 'ERR_CANCELED') {
+      if (axios.isCancel?.(error as never) || (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'ERR_CANCELED')) {
         return // Ignore canceled requests
       }
 
-      const errMsg = error?.response?.data?.error || error?.message || 'Server error'
+      const errMsg = (typeof error === 'object' && error !== null && 'response' in error && (error as { response?: { data?: { error?: string } } }).response?.data?.error) || (error instanceof Error ? error.message : 'Server error')
       const isTimeout = /timeout|ECONNABORTED/i.test(errMsg)
       const isNetworkError = /network|fetch/i.test(errMsg.toLowerCase())
       
@@ -307,7 +356,7 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
       setShowPlanningDuringLoading(false)
       setPendingRequest(null)
     }
-  }, [messages, userInput, loading, pendingRequest, userDetail, onFinal, createTrip, updateTrip, editTripId])
+  }, [messages, userInput, loading, pendingRequest, userDetail, onFinal, createTrip, updateTrip, editTripId, desiredDays])
 
   const RenderGenerativeUi = useCallback((ui: string, autoOpen: boolean) => {
     if (ui === 'budget') {
@@ -350,7 +399,7 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
   const groupedPrompts = useMemo(() => {
     const shuffled = [...starterPrompts].sort(() => Math.random() - 0.5)
     return shuffled.slice(0, 6) // Show 6 random prompts
-  }, [])
+  }, [starterPrompts])
 
   const renderStarterPrompts = useCallback(() => (
     <div className='mb-3'>

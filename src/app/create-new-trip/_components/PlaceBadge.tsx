@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
+
 type Props = {
   name: string
   query?: string
@@ -12,12 +13,7 @@ export default function PlaceBadge({ name, query }: Props) {
   const [photoRef, setPhotoRef] = useState<string | null>(null)
   const [placeUrl, setPlaceUrl] = useState<string | null>(null)
 
-  useEffect(() => {
-    let mounted = true
-    const q = query || name
-    ;(async () => {})()
-    return () => { mounted = false }
-  }, [name, query])
+  // Removed no-op effect with unused variables
 
   const searchKey = ['places-search', query || name]
   const { data } = useQuery({
@@ -46,6 +42,7 @@ export default function PlaceBadge({ name, query }: Props) {
             src={`/api/google/places/photo?photo_reference=${encodeURIComponent(photoRef)}&maxwidth=640`}
             alt={name}
             className="w-full h-full object-cover"
+            
           />
         ) : null}
       </div>

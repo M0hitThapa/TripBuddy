@@ -2,7 +2,7 @@ import { Container } from "@/components/container";
 import Hero from "@/components/hero";
 import { HeroVideoDialogDemo } from "@/components/hero-video-dialogue";
 import Navbar from "@/components/navbar";
-import Image from "next/image";
+
 
 export default function Home() {
   return (

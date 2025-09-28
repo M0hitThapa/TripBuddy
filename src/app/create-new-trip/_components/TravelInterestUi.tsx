@@ -18,7 +18,9 @@ export const TravelInterestOptions = [
   { id: 11, title: 'Global Experiences', Icon: Globe2, bg: 'bg-teal-100', text: 'text-teal-700' },
 ]
 
-function TravelInterestUi({ onSelectedOption }: any) {
+type TravelInterestUiProps = { onSelectedOption: (value: string) => void }
+
+function TravelInterestUi({ onSelectedOption }: TravelInterestUiProps) {
   const [selected, setSelected] = useState<string[]>([])
 
   const toggle = (title: string) => {

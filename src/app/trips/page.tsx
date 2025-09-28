@@ -7,10 +7,11 @@ import React, { useEffect, useMemo, useState } from "react";
 import { api } from "../../../convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { useUserDetail } from "../provider";
+import type { Id } from "../../../convex/_generated/dataModel";
 
 export default function TripsPage() {
   const { user } = useUser();
-  const { userDetail } = useUserDetail() as any;
+  const { userDetail } = useUserDetail() as { userDetail?: { _id?: Id<'userTable'> } };
   const trips = useQuery(
     api.tripDetail.ListTripsByUser,
     userDetail?._id ? { uid: userDetail._id } : "skip"
@@ -33,11 +34,11 @@ export default function TripsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {trips.map((t: any) => (
+              {trips.map((t) => (
                 <TripCard
                   key={t._id}
                   t={t}
-                  onDelete={async (id: string) => {
+                  onDelete={async (id: Id<'TripDetailTable'>) => {
                     try {
                       await deleteTrip({ id });
                     } catch (err) {
@@ -54,15 +55,27 @@ export default function TripsPage() {
   );
 }
 
+type ItineraryItem = { photos?: string[]; title?: string; hotels?: string[] };
+type TripDoc = {
+  _id: Id<'TripDetailTable'>;
+  tripDetail?: {
+    resp?: string;
+    destination?: string;
+    city?: string;
+    country?: string;
+    itinerary?: ItineraryItem[];
+  };
+};
+
 function TripCard({
   t,
   onDelete,
 }: {
-  t: any;
-  onDelete: (id: string) => Promise<void>;
+  t: TripDoc;
+  onDelete: (id: Id<'TripDetailTable'>) => Promise<void>;
 }) {
   const allPhotos: string[] =
-    t.tripDetail?.itinerary?.flatMap((d: any) => d?.photos || []) || [];
+    t.tripDetail?.itinerary?.flatMap((d) => d?.photos || []) || [];
   const firstPhoto: string | undefined = allPhotos[0];
   const [imgSrc, setImgSrc] = useState<string | null>(
     firstPhoto
@@ -74,7 +87,7 @@ function TripCard({
     const resp: string = t.tripDetail?.resp || "";
     // Try to parse "from X to Y"
     const m = resp.match(/from\s+([^.,;\n]+?)\s+to\s+([^.,;\n]+)/i);
-    let from = m?.[1]?.trim();
+    const from = m?.[1]?.trim();
     let to = m?.[2]?.trim();
     // Fallback for destination
     if (!to) {

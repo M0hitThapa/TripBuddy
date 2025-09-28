@@ -7,12 +7,13 @@ import { api } from '../../../../convex/_generated/api'
 import { useParams, useRouter } from 'next/navigation'
 import React, { useMemo } from 'react'
 import ItineraryGrid from '../../create-new-trip/_components/ItineraryGrid'
+import type { Id } from '../../../../convex/_generated/dataModel'
 
 export default function TripDetailPage() {
-  const params = useParams() as { id?: string }
+  const params = useParams<{ id: string }>()
   const router = useRouter()
-  const id = params?.id as any
-  const trip = useQuery(api.tripDetail.GetTrip, id ? { id } : 'skip') as any
+  const id = params?.id as unknown as Id<'TripDetailTable'>
+  const trip = useQuery(api.tripDetail.GetTrip, id ? { id } : 'skip')
 
   const itinerary = useMemo(() => trip?.tripDetail?.itinerary ?? [], [trip])
   const budget = useMemo(() => trip?.tripDetail?.budget ?? null, [trip])
@@ -37,7 +38,7 @@ export default function TripDetailPage() {
                   <h1 className="text-2xl font-bold">Trip Itinerary</h1>
                 </div>
                 <button
-                  onClick={() => router.push(`/trips/${encodeURIComponent(id)}/edit`)}
+                  onClick={() => router.push(`/trips/${encodeURIComponent(id as unknown as string)}/edit`)}
                   className="rounded-sm bg-neutral-950 px-4 py-2 text-sm font-bold text-white hover:bg-neutral-800"
                 >
                   Edit with AI

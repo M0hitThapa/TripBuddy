@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     const res = await fetch(url)
     const contentType = res.headers.get('content-type') || ''
     if (!res.ok || !/^image\//i.test(contentType)) {
-      let message: any = undefined
+      let message: unknown = undefined
       try {
         message = await res.json()
       } catch {
@@ -39,9 +39,10 @@ export async function GET(req: NextRequest) {
         'Cache-Control': 'public, max-age=3600'
       }
     })
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('Places photo route error', e)
-    return NextResponse.json({ error: e?.message || 'Server error' }, { status: 500 })
+    const message = e instanceof Error ? e.message : 'Server error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 

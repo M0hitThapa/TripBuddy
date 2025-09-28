@@ -26,7 +26,9 @@ export const SelectBudgetOptions = [
   },
 ]
 
-function BudgetUi({onSelectedOption}:any) {
+type BudgetUiProps = { onSelectedOption: (value: string) => void }
+
+function BudgetUi({onSelectedOption}: BudgetUiProps) {
   return (
      <div className='mt-2 grid grid-cols-2 md:grid-cols-4 gap-2 max-w-sm'>
             {SelectBudgetOptions.map((item, index) => (

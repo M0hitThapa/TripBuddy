@@ -34,7 +34,9 @@ export const SelectTravelsList = [
 ]
 
 
-function GroupSizeUi({onSelectedOption}:any) {
+type GroupSizeUiProps = { onSelectedOption: (value: string) => void }
+
+function GroupSizeUi({onSelectedOption}: GroupSizeUiProps) {
   return (
     <div className='mt-2 grid grid-cols-2 md:grid-cols-4 gap-2 max-w-sm'>
         {SelectTravelsList.map((item, index) => (
