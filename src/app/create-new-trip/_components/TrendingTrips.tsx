@@ -160,21 +160,19 @@ export default function TrendingTrips({ onSelectTrip, gridClassName }: Props) {
         {trips.map((t) => (
           <div key={t.id} className="mx-auto w-full max-w-xs">
             <FollowerPointerCard
-              title={<TitleComponent title={t.author} avatar={t.authorAvatar} />}
+              title={t.author}
             >
-              <div className="group relative h-full overflow-hidden rounded-2xl border-2 border-zinc-100 bg-white transition duration-200 hover:shadow-xl">
+              <div className="relative h-full overflow-hidden rounded-2xl border-2 border-zinc-100 bg-white">
                 <div className="relative aspect-[16/12] w-full overflow-hidden rounded-tl-lg rounded-tr-lg bg-gray-100">
                   <img
                     src={t.image}
                     alt="thumbnail"
-                    className="h-full transform  transition duration-200 group-hover:scale-95 rounded-3xl p-3"
-                   
+                    className="h-full rounded-3xl p-3"
                   />
                 </div>
                 <div className="p-4">
                   <h2 className="my-1 text-xs text-zinc-500">{t.date}</h2>
                   <h2 className="my-2 text-lg font-bold text-zinc-700">{t.title}</h2>
-                  <h2 className="my-2 text-sm font-normal text-zinc-500">{t.description}</h2>
                   <div className="mt-6 flex flex-row items-center justify-between">
                     <span className="text-sm text-gray-500">TripBuddy</span>
                     <button

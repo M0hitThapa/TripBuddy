@@ -133,13 +133,13 @@ function TripCard({
 
   return (
     <a href={`/trips/${t._id}`} className="mx-auto w-full max-w-xs">
-      <div className="group relative h-full overflow-hidden rounded-2xl border-2 border-zinc-100 bg-white transition duration-200 hover:shadow-xl">
+      <div className="relative h-full overflow-hidden rounded-2xl border-2 border-zinc-100 bg-white">
         <div className="relative aspect-[16/12] w-full overflow-hidden rounded-tl-lg rounded-tr-lg bg-gray-100">
           {imgSrc ? (
             <img
               src={imgSrc}
               alt="thumbnail"
-              className="h-full w-full transform transition duration-200 group-hover:scale-95 rounded-3xl p-3 object-cover"
+              className="h-full w-full rounded-3xl p-3 object-cover"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center p-3">
