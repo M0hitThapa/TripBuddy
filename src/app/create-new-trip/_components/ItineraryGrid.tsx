@@ -37,6 +37,16 @@ type Props = {
 const ItineraryGrid = ({ itinerary, costs }: Props) => {
   const costByDay = new Map<number, DayCostBreakdown>((costs ?? []).map(c => [c.day, c]))
 
+  // Extract destination from first day's content for better place searches
+  const destination = React.useMemo(() => {
+    if (!itinerary?.length) return ''
+    const firstDay = itinerary[0]
+    const text = [firstDay.title, firstDay.morning, firstDay.afternoon, firstDay.evening].join(' ')
+    // Try to extract city/country name (capitalized words)
+    const match = text.match(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/)
+    return match?.[1] || ''
+  }, [itinerary])
+
   // Cache photo references per day if AI didn't provide photos
   const [photoRefsByDay, setPhotoRefsByDay] = useState<Record<number, string[]>>({})
 
@@ -194,7 +204,7 @@ const ItineraryGrid = ({ itinerary, costs }: Props) => {
                       <div className="font-semibold text-neutral-800">Cafes</div>
                       <div className="ml-1 space-y-1">
                         {item.cafeDetails.map((c, idx) => (
-                          <PlaceBadge key={`cafe-${c.name}-${idx}`} name={c.name} />
+                          <PlaceBadge key={`cafe-${c.name}-${idx}`} name={c.name} query={destination ? `${c.name} ${destination}` : c.name} />
                         ))}
                       </div>
                     </div>
@@ -206,7 +216,7 @@ const ItineraryGrid = ({ itinerary, costs }: Props) => {
                       <div className="font-semibold text-neutral-800">Cafes</div>
                       <div className="ml-1 space-y-1">
                         {item.cafes.map((c, idx) => (
-                          <PlaceBadge key={`cafe-${c}-${idx}`} name={c} />
+                          <PlaceBadge key={`cafe-${c}-${idx}`} name={c} query={destination ? `${c} ${destination}` : c} />
                         ))}
                       </div>
                     </div>
@@ -219,7 +229,7 @@ const ItineraryGrid = ({ itinerary, costs }: Props) => {
                       <div className="font-semibold text-neutral-800">Hotels</div>
                       <div className="ml-1 space-y-1">
                         {item.hotelDetails.map((h, idx) => (
-                          <PlaceBadge key={`hotel-${h.name}-${idx}`} name={h.name} />
+                          <PlaceBadge key={`hotel-${h.name}-${idx}`} name={h.name} query={destination ? `${h.name} ${destination}` : h.name} />
                         ))}
                       </div>
                     </div>
@@ -231,7 +241,7 @@ const ItineraryGrid = ({ itinerary, costs }: Props) => {
                       <div className="font-semibold text-neutral-800">Hotels</div>
                       <div className="ml-1 space-y-1">
                         {item.hotels.map((h, idx) => (
-                          <PlaceBadge key={`hotel-${h}-${idx}`} name={h} />
+                          <PlaceBadge key={`hotel-${h}-${idx}`} name={h} query={destination ? `${h} ${destination}` : h} />
                         ))}
                       </div>
                     </div>
@@ -244,7 +254,7 @@ const ItineraryGrid = ({ itinerary, costs }: Props) => {
                       <div className="font-semibold text-neutral-800">Adventures</div>
                       <div className="ml-1 space-y-1">
                         {item.adventureDetails.map((a, idx) => (
-                          <PlaceBadge key={`adv-${a.name}-${idx}`} name={a.name} />
+                          <PlaceBadge key={`adv-${a.name}-${idx}`} name={a.name} query={destination ? `${a.name} ${destination}` : a.name} />
                         ))}
                       </div>
                     </div>
@@ -256,7 +266,7 @@ const ItineraryGrid = ({ itinerary, costs }: Props) => {
                       <div className="font-semibold text-neutral-800">Adventures</div>
                       <div className="ml-1 space-y-1">
                         {item.adventures.map((a, idx) => (
-                          <PlaceBadge key={`adv-${a}-${idx}`} name={a} />
+                          <PlaceBadge key={`adv-${a}-${idx}`} name={a} query={destination ? `${a} ${destination}` : a} />
                         ))}
                       </div>
                     </div>

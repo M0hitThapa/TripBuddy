@@ -174,10 +174,16 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
 
     if (!overrideContent) setUserInput('')
 
+    // Add explicit trip duration context if we know it
+    let enrichedContent = contentToSend
+    if (desiredDays && desiredDays > 0 && contentToSend.toLowerCase().includes('travel dates:')) {
+      enrichedContent = `${contentToSend}\n\nIMPORTANT: This is a ${desiredDays}-day trip. Please generate a complete ${desiredDays}-day itinerary with all details for each day.`
+    }
+
     const newMsg: Message = {
       id: `${Date.now()}-${Math.random()}`,
       role: 'user',
-      content: contentToSend
+      content: enrichedContent
     }
 
     setMessages((prev: Message[]) => [...prev, newMsg])
@@ -426,7 +432,7 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
   const renderStarterPrompts = useCallback(() => (
     <div className='mb-3'>
       <div className='text-xs font-medium text-neutral-600 mb-2 px-1'>
-        Popular trip ideas - click to start:
+        click to start
       </div>
       <div className='grid gap-2 max-h-64 overflow-y-auto'>
         {groupedPrompts.map((p, i) => (

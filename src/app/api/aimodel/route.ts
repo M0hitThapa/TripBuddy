@@ -84,25 +84,40 @@ Generate a STRICT JSON object with this exact schema:
         "summary": "Expected weather conditions",
         "tips": "What to wear or bring based on weather"
       },
-      "cafeDetails": [{"name": "Cafe Name", "description": "What makes this cafe special"}],
-      "hotelDetails": [{"name": "Hotel Name", "description": "Hotel features and why it's recommended"}],
-      "adventureDetails": [{"name": "Activity Name", "description": "Activity details and why it's worth doing"}]
+      "cafeDetails": [{"name": "Specific Cafe Name", "description": "What makes this cafe special"}],
+      "hotelDetails": [{"name": "Specific Hotel Name", "description": "Hotel features and why it's recommended"}],
+      "adventureDetails": [{"name": "Specific Activity/Place Name", "description": "Activity details and why it's worth doing"}]
+    },
+    {
+      "day": 2,
+      "title": "Another Unique Day Title",
+      "morning": "Different morning activities...",
+      "afternoon": "Different afternoon activities...",
+      "evening": "Different evening activities...",
+      "cafeDetails": [{"name": "Another Cafe", "description": "Why visit"}],
+      "hotelDetails": [{"name": "Another Hotel", "description": "Features"}]
     }
   ]
 }
 
 CRITICAL REQUIREMENTS - READ CAREFULLY:
 1. Every single day in the itinerary array MUST have these 4 fields:
-   - title (unique, descriptive)
-   - morning (detailed, 2-3 sentences with specific places)
-   - afternoon (detailed, 2-3 sentences with specific places)
-   - evening (detailed, 2-3 sentences with specific places)
+   - title (unique, descriptive, 5-10 words)
+   - morning (2-3 sentences with specific places and activities)
+   - afternoon (2-3 sentences with specific places and activities)
+   - evening (2-3 sentences with specific places and activities)
 
-2. Do NOT leave ANY day incomplete. Generate complete information for ALL days from day 1 to the last day.
+2. MANDATORY: Generate EXACTLY the number of days requested by the user. If they want 5 days, you MUST provide 5 complete days.
 
-3. If you're approaching token limits, PRIORITIZE completing title/morning/afternoon/evening for ALL days first, then add optional fields (weather, notes, etc.) only if space remains.
+3. Do NOT leave ANY day incomplete. Generate complete information for ALL days from day 1 to the last day.
 
-4. Never stop mid-generation. Complete all days even if it means keeping descriptions concise.
+4. If you're approaching token limits, keep descriptions concise but ALWAYS complete all required fields for ALL days. 
+   - RECOMMENDED: Include cafeDetails, hotelDetails, and adventureDetails with real place names when possible (helps with maps/photos).
+   - If space is tight, skip weather and notes first, but try to include at least 1-2 places per category.
+
+5. Never stop mid-generation. It's better to have shorter descriptions for all days than detailed descriptions for only some days.
+
+6. VALIDATION: Before finishing, count your itinerary days and ensure it matches the trip duration. If the user wants a 5-day trip, your itinerary array MUST have exactly 5 complete day objects.
 
 Budget Guidelines:
 - Low Budget: Focus on hostels, street food, free attractions, local transport
@@ -314,6 +329,7 @@ export async function POST(req: NextRequest) {
 
             if (incompleteDays.length === 0) {
               // All days are complete - if budget missing, synthesize a minimal placeholder so UI can render gracefully
+              console.log(`[aimodel] ✅ Generated complete ${itineraryArray.length}-day itinerary`);
               if (!hasBudget) {
                 try {
                   const itArr = p.itinerary as Array<{ day?: number }>;
@@ -325,8 +341,8 @@ export async function POST(req: NextRequest) {
                 } catch {}
               }
               return NextResponse.json(p);
-            } else if (incompleteDays.length <= 2 && itineraryArray.length >= 3) {
-              // If only 1-2 days incomplete (likely token cutoff), fill them with generic content
+            } else if (incompleteDays.length <= 3 && itineraryArray.length >= 3) {
+              // If only 1-3 days incomplete (likely token cutoff), fill them with generic content
               console.warn(`[aimodel] Filling ${incompleteDays.length} incomplete days:`, incompleteDays);
               for (const dayNum of incompleteDays) {
                 const idx = dayNum - 1;
