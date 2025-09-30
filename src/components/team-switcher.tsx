@@ -39,7 +39,7 @@ export function TeamSwitcher({
 </svg>
               </div>
               <div className="">
-                <Link href="/" className="truncate text-2xl font-bold text-shadow-2xs text-neutral-950 hover:text-neutral-700 transition-colors">TripBuddy</Link>
+                <Link href="/" className="truncate text-2xl font-bold text-shadow-2xs text-neutral-950 hover:text-neutral-700 transition-colors">TripFriend</Link>
              
               </div>
               

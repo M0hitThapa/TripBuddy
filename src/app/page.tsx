@@ -1,4 +1,5 @@
 import { Container } from "@/components/container";
+import FeaturesSectionDemo from "@/components/feature";
 import Hero from "@/components/hero";
 import { HeroVideoDialogDemo } from "@/components/hero-video-dialogue";
 import Navbar from "@/components/navbar";
@@ -75,6 +76,7 @@ export default function Home() {
       </div> */}
       <HeroVideoDialogDemo />
     </div>
+    <FeaturesSectionDemo />
    </div>
    </div>
    

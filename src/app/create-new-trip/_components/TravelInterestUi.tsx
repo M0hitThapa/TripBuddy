@@ -27,20 +27,19 @@ function TravelInterestUi({ onSelectedOption }: TravelInterestUiProps) {
     setSelected((prev) => {
       const exists = prev.includes(title)
       if (exists) return prev.filter((t) => t !== title)
-      if (prev.length >= 3) return prev // cap at 3
       return [...prev, title]
     })
   }
 
-  const canSubmit = selected.length === 3
+  const canSubmit = selected.length >= 1
   const helperText = useMemo(() => {
-    if (selected.length < 3) return `Choose ${3 - selected.length} more`
-    return 'Ready to submit'
+    if (selected.length === 0) return 'Choose one or more interests'
+    return `${selected.length} selected`
   }, [selected])
 
   return (
     <div className="mt-4 max-w-lg">
-      <div className="text-sm text-neutral-700 mb-3">Pick exactly three interests</div>
+      <div className="text-sm text-neutral-700 mb-3">Pick your travel interests</div>
       <div className="flex flex-wrap gap-3">
         {TravelInterestOptions.map((item) => {
           const isSelected = selected.includes(item.title)

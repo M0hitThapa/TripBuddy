@@ -9,11 +9,13 @@ import { DateRange } from 'react-day-picker'
 type Props = {
   onSelectedRange: (value: string) => void
   autoOpen?: boolean
+  maxDays?: number
 }
 
-const DateRangeUi = ({ onSelectedRange, autoOpen = false }: Props) => {
+const DateRangeUi = ({ onSelectedRange, autoOpen = false, maxDays }: Props) => {
   const [open, setOpen] = useState(autoOpen)
   const [range, setRange] = useState<DateRange | undefined>(undefined)
+  const [error, setError] = useState<string | null>(null)
 
   const isValid = Boolean(range?.from && range?.to)
 
@@ -25,6 +27,19 @@ const DateRangeUi = ({ onSelectedRange, autoOpen = false }: Props) => {
 
   function submit() {
     if (!isValid || !formatted) return
+    // Validate maxDays if provided
+    if (maxDays && range?.from && range?.to) {
+      const from = new Date(range.from)
+      const to = new Date(range.to)
+      from.setHours(0,0,0,0); to.setHours(0,0,0,0)
+      const ms = Math.max(0, to.getTime() - from.getTime())
+      const days = Math.floor(ms / (24 * 60 * 60 * 1000)) + 1
+      if (days > maxDays) {
+        setError(`You can only generate up to ${maxDays} days. Please choose a shorter range.`)
+        return
+      }
+    }
+    setError(null)
     onSelectedRange(formatted)
     setOpen(false)
   }
@@ -48,6 +63,9 @@ const DateRangeUi = ({ onSelectedRange, autoOpen = false }: Props) => {
             disabled={{ before: today }}
           />
         </div>
+        {error && (
+          <div className="mt-3 text-sm text-red-600">{error}</div>
+        )}
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
           <Button disabled={!isValid} onClick={submit}>Confirm</Button>

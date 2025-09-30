@@ -4,7 +4,7 @@ import SignOutButtons from '@/components/signoutbutton'
 import { Button } from '@/components/ui/button'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Textarea } from '@/components/ui/textarea'
-import { Loader2, Send, PlaneTakeoff, Mountain, Users, Waves, MapPin, Camera, Coffee, ShoppingBag, Utensils, Building, Sun, Heart } from 'lucide-react'
+import { Loader2, Send, PlaneTakeoff, ShoppingBag, Sun } from 'lucide-react'
 import { LoaderOne } from '@/components/ui/loaderOne'
 import axios, { type AxiosResponse } from "axios"
 import { useMutation } from 'convex/react'
@@ -75,6 +75,8 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
   const [pendingRequest, setPendingRequest] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
   const [desiredDays, setDesiredDays] = useState<number | null>(null)
+  const MAX_TRIP_DAYS = 5
+  const [showDayLimitModal, setShowDayLimitModal] = useState(false)
   
   const endOfMessagesRef = useRef<HTMLDivElement | null>(null)
   const abortRef = useRef<AbortController | null>(null)
@@ -86,29 +88,9 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
 
   // Enhanced starter prompts covering different travel types and budgets (memoized)
   const starterPrompts = useMemo(() => ([
-    // Adventure & Nature
-    { label: 'Plan a 7-day adventure trip to Nepal from Delhi for a couple', Icon: Mountain, bg: 'bg-emerald-100', text: 'text-emerald-700' },
-    { label: 'Romantic 4-day getaway to Paris under $2000', Icon: Heart, bg: 'bg-rose-100', text: 'text-rose-700' },
-    
-    // City & Culture
-    { label: 'Solo backpacking trip to Southeast Asia for 2 weeks', Icon: PlaneTakeoff, bg: 'bg-blue-100', text: 'text-blue-700' },
-    { label: 'Family vacation to Tokyo with kids, 5 days mid-budget', Icon: Users, bg: 'bg-purple-100', text: 'text-purple-700' },
-    
-    // Beach & Relaxation
-    { label: 'Beach holiday to Bali from Mumbai, luxury budget', Icon: Waves, bg: 'bg-cyan-100', text: 'text-cyan-700' },
-    { label: 'Weekend trip to Goa with friends, party and nightlife', Icon: Sun, bg: 'bg-orange-100', text: 'text-orange-700' },
-    
-    // Food & Culture
-    { label: 'Food tour of Italy for 10 days, medium budget couple', Icon: Utensils, bg: 'bg-red-100', text: 'text-red-700' },
-    { label: 'Cultural heritage trip to Rajasthan from Bangalore', Icon: Building, bg: 'bg-amber-100', text: 'text-amber-700' },
-    
-    // Photography & Sightseeing
-    { label: 'Photography trip to Iceland, solo traveler, 6 days', Icon: Camera, bg: 'bg-indigo-100', text: 'text-indigo-700' },
-    { label: 'Coffee culture tour of Ethiopia and Colombia', Icon: Coffee, bg: 'bg-yellow-100', text: 'text-yellow-700' },
-    
-    // Shopping & Urban
-    { label: 'Shopping spree in Dubai and Singapore, luxury', Icon: ShoppingBag, bg: 'bg-pink-100', text: 'text-pink-700' },
-    { label: 'Explore hidden gems of Kerala, eco-friendly travel', Icon: MapPin, bg: 'bg-green-100', text: 'text-green-700' }
+    { label: 'Plan a trip', Icon: PlaneTakeoff, bg: 'bg-blue-100', text: 'text-blue-700' },
+    { label: 'Plan a weekend getaway', Icon: Sun, bg: 'bg-orange-100', text: 'text-orange-700' },
+    { label: 'Plan a budget-friendly trip', Icon: ShoppingBag, bg: 'bg-pink-100', text: 'text-pink-700' },
   ]), [])
 
   useEffect(() => {
@@ -145,6 +127,7 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
     } catch {}
 
     // Try to capture desired trip length from user content
+    let overLimit = false
     try {
       // From date range message: "Travel dates: from YYYY-MM-DD to YYYY-MM-DD"
       const dateMatch = contentToSend.match(/Travel dates: from (\d{4}-\d{2}-\d{2}) to (\d{4}-\d{2}-\d{2})/i)
@@ -154,16 +137,37 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
         from.setHours(0,0,0,0); to.setHours(0,0,0,0)
         const ms = Math.max(0, to.getTime() - from.getTime())
         const days = Math.floor(ms / (24 * 60 * 60 * 1000)) + 1
-        if (Number.isFinite(days) && days > 0) setDesiredDays(days)
+        if (Number.isFinite(days) && days > 0) {
+          if (days > MAX_TRIP_DAYS) {
+            setDesiredDays(MAX_TRIP_DAYS)
+            setShowDayLimitModal(true)
+            overLimit = true
+          } else {
+            setDesiredDays(days)
+          }
+        }
       } else {
         // From free text like "10 days", "for 7-day", "a 5 day trip"
         const numMatch = contentToSend.match(/\b(\d{1,3})\s*-?\s*day(s)?\b/i)
         if (numMatch) {
           const n = parseInt(numMatch[1] as string, 10)
-          if (Number.isFinite(n) && n > 0) setDesiredDays(n)
+          if (Number.isFinite(n) && n > 0) {
+            if (n > MAX_TRIP_DAYS) {
+              setDesiredDays(MAX_TRIP_DAYS)
+              setShowDayLimitModal(true)
+              overLimit = true
+            } else {
+              setDesiredDays(n)
+            }
+          }
         }
       }
     } catch {}
+
+    // If the user requested more than the allowed days, stop here (do not send to API or add chat messages)
+    if (overLimit) {
+      return
+    }
 
     setLoading(true)
     setPendingRequest(contentToSend)
@@ -264,25 +268,42 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
             if (current.length > desiredDays) {
               adjusted = current.slice(0, desiredDays)
             } else if (current.length < desiredDays) {
-              const last: ItineraryItem = current[current.length - 1] ?? {
-                day: current.length,
-                title: 'Explore locally',
-                morning: 'Leisurely breakfast and neighborhood walk.',
-                afternoon: 'Visit a nearby museum or park of your choice.',
-                evening: 'Enjoy local cuisine and a relaxing evening stroll.'
-              }
+              // Generate varied placeholder days (lightweight, diverse templates)
+              const templates: Omit<ItineraryItem, 'day'>[] = [
+                {
+                  title: 'Leisure & Local Discovery',
+                  morning: 'Start with a relaxed breakfast, stroll a nearby market or old town lanes.',
+                  afternoon: 'Visit a well-rated museum or green park; enjoy a local cafe.',
+                  evening: 'Dinner at a recommended bistro and a riverside or promenade walk.',
+                },
+                {
+                  title: 'Hidden Gems & Culture',
+                  morning: 'Free walking tour or explore a street-art district with coffee stops.',
+                  afternoon: 'Cultural center or lesser-known attraction; sample a regional snack.',
+                  evening: 'Catch sunset from a viewpoint; consider live music or a local event.',
+                },
+                {
+                  title: 'Foodie Trail',
+                  morning: 'Cafe hop; try a signature local pastry or brunch special.',
+                  afternoon: 'Visit a popular lunch spot; browse a specialty food market.',
+                  evening: 'Book dinner at a recommended restaurant; explore a night market.',
+                },
+                {
+                  title: 'Nature & Relaxation',
+                  morning: 'Take a scenic walk, short hike, or botanical garden visit.',
+                  afternoon: 'Relax at a garden/beach/riverfront; optional spa or tea stop.',
+                  evening: 'Casual dinner and quiet neighborhood stroll for dessert.',
+                },
+              ]
               adjusted = [...current]
               for (let d = current.length + 1; d <= desiredDays; d++) {
+                const t = templates[(d - 1) % templates.length]
                 adjusted.push({
                   day: d,
-                  title: last.title || 'Explore locally',
-                  morning: last.morning || 'Leisurely breakfast and neighborhood walk.',
-                  afternoon: last.afternoon || 'Visit a nearby museum or park of your choice.',
-                  evening: last.evening || 'Enjoy local cuisine and a relaxing evening stroll.',
-                  notes: last.notes,
-                  cafes: last.cafes,
-                  hotels: last.hotels,
-                  adventures: last.adventures,
+                  title: t.title,
+                  morning: t.morning,
+                  afternoon: t.afternoon,
+                  evening: t.evening,
                 })
               }
             }
@@ -367,6 +388,7 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
       return (
         <DateRangeUi 
           autoOpen={autoOpen && !hasSelectedDateRange} 
+          maxDays={5}
           onSelectedRange={(v: string) => { 
             setHasSelectedDateRange(true)
             onSend(v)
@@ -532,6 +554,27 @@ const Chatbot = ({ onFinal, editTripId }: ChatbotProps) => {
           </Button>
         </div>
       </section>
+
+      {showDayLimitModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowDayLimitModal(false)} />
+          <div className="relative z-10 w-full max-w-md rounded-lg bg-white shadow-xl border border-neutral-200 p-5 mx-4">
+            <h3 className="text-lg font-semibold text-neutral-900 mb-2">Trip length limit</h3>
+            <p className="text-sm text-neutral-700 mb-4">
+              You can only generate up to {MAX_TRIP_DAYS} days trip for now. Unlimited-day trips are coming soon!
+            </p>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowDayLimitModal(false)}
+                className="px-4 py-2 rounded-md bg-neutral-900 text-white text-sm font-medium hover:bg-neutral-800"
+              >
+                Okay
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

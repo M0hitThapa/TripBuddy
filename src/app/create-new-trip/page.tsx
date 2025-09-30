@@ -41,6 +41,8 @@ function PageContent() {
   const [itinerary, setItinerary] = useState<ItineraryItem[]>([])
   const [budget, setBudget] = useState<AiResponse["budget"] | null>(null)
   const [chatKey, setChatKey] = useState<number>(0)
+  const [isSmallScreen, setIsSmallScreen] = useState<boolean>(false)
+  const [showItineraryMobile, setShowItineraryMobile] = useState<boolean>(false)
   const search = useSearchParams()
   const editId = search?.get('edit')
   const existingTrip = useQuery(api.tripDetail.GetTrip, editId ? { id: (editId as unknown as Id<'TripDetailTable'>) } : 'skip')
@@ -59,8 +61,20 @@ function PageContent() {
   const handleFinal = (payload: AiResponse) => {
     if (Array.isArray(payload?.itinerary)) setItinerary(payload.itinerary)
     if (payload?.budget) setBudget(payload.budget)
+    // Auto-open itinerary on small screens
+    if (isSmallScreen) setShowItineraryMobile(true)
   }
   const dailyCosts = useMemo(() => budget?.breakdown ?? [], [budget])
+
+  // Detect small screens (tablets/mobiles)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mq = window.matchMedia('(max-width: 1024px)') // <lg
+    const apply = () => setIsSmallScreen(mq.matches)
+    apply()
+    mq.addEventListener?.('change', apply)
+    return () => mq.removeEventListener?.('change', apply)
+  }, [])
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -101,19 +115,22 @@ function PageContent() {
 
 
   <div className="absolute inset-0 grid grid-cols-1 md:grid-cols-2 w-full h-full overflow-hidden">
-    <div className="h-full min-h-0 overflow-hidden flex flex-col">
+    <div className={`h-full min-h-0 overflow-hidden flex flex-col ${isSmallScreen && showItineraryMobile ? 'hidden' : ''}`}>
       <Chatbot key={chatKey} onFinal={handleFinal} editTripId={editId} />
     </div>
-    <div className="bg-white/60 h-full overflow-hidden flex flex-col">
+    <div className={`bg-white/60 h-full overflow-hidden flex flex-col ${isSmallScreen && !showItineraryMobile ? 'hidden md:flex' : ''}`}>
       {(itinerary?.length || existingTrip?.tripDetail?.itinerary?.length) ? (
         <>
           <div className="px-6 pt-4 pb-2 flex items-center justify-between">
-            <button
-              className="px-3 py-1.5 rounded-md text-sm font-medium border border-neutral-300 bg-white hover:bg-neutral-100"
-              onClick={() => { setItinerary([]); setBudget(null) }}
-            >
-              ← Back
-            </button>
+            {/* Back button for small screens to return to chat (doesn't clear data) */}
+            {isSmallScreen && (
+              <button
+                className="px-3 py-1.5 rounded-md text-sm font-medium border border-neutral-300 bg-white hover:bg-neutral-100"
+                onClick={() => setShowItineraryMobile(false)}
+              >
+                ← Back
+              </button>
+            )}
             {budget ? (
               <div className="w-64 shrink-0 sticky top-2">
                 <div className="rounded-lg border border-neutral-200 bg-white shadow p-4">
@@ -129,7 +146,10 @@ function PageContent() {
         </>
       ) : (
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <TrendingTrips onSelectTrip={(payload) => { setItinerary(payload.itinerary); setBudget(payload.budget ?? null) }} />
+          {/* Hide TrendingTrips on tablet/mobile */}
+          <div className="hidden lg:block">
+            <TrendingTrips onSelectTrip={(payload) => { setItinerary(payload.itinerary); setBudget(payload.budget ?? null) }} />
+          </div>
         </div>
       )}
     </div>
